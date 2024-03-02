@@ -1,5 +1,68 @@
 <html>
     <head>
         <h3>Cameron Kull (cak264) & Marie Williams (mcw242)</h3>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://d3js.org/topojson.v3.min.js"></script>
     </head>
+    <body>
+        <svg id="map" width = 1200 height = 400></svg>
+
+        <script>
+            // constants
+            const svg = d3.select("#map");
+            const mapWidth = svg.attr("width");
+            const mapHeight = svg.attr("height");
+            let map = svg.append("g");
+            let viewport = svg.append("g");
+
+            // map setup
+            const requestData = async function(){
+                const pittsburgh = await d3.json("pittsburgh.geojson");
+                console.log(pittsburgh);
+
+                let yelps = await d3.csv("yelp_pittsburgh.csv", d3.autoType); 
+                //trees = trees.filter(t=> t.DBH != null && t.DBH >=5 && t.qLegalStatus!= null);   
+                console.log(yelps);  
+
+                //var neighborhoods = topojson.feature(pittsburgh, pittsburgh);
+                // var neighborhoodsMesh = topojson.mesh(sanfran, sanfran.objects.SFNeighborhoods);
+                var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], pittsburgh);
+                var path = d3.geoPath().projection(projection);
+
+                console.log(topojson.feature(pittsburgh, pittsburgh))
+
+                // construct the visualization
+                map.selectAll("path.main").data(pittsburgh.features)
+                    .join("path")
+                    .attr("class", "main")
+                    .attr("d", path)
+                    .attr('fill', '#e6e6e6');
+
+                map.selectAll("path.neighborhoods").data(pittsburgh.features)
+                    .join("path")
+                    .attr("class", "neighborhoods")
+                    .attr("d", path)
+                    .attr('fill', 'none')
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1);
+
+                // add circles
+
+                let colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+                console.log(colorScale("food"));
+
+                viewport.selectAll("circle").data(yelps)
+                        .join("circle")
+                        .attr("cx", y=> projection([y.longitude, y.latitude])[0])
+                        .attr("cy", y=> projection([y.longitude, y.latitude])[1])
+                        .attr("r", 5)
+                        .attr("fill", y=> colorScale(y.type))
+                        .attr("opacity", 0.8);
+
+            }     
+            
+            requestData();
+                
+        </script>
+    </body>
 </html>
