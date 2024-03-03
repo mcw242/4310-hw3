@@ -8,6 +8,7 @@
                 display: flex;
                 flex-direction: row;
                 align-items: flex-start;
+                padding-left: 10px;
             }
 
             #top {
@@ -16,13 +17,12 @@
             }
 
             #panel {
-                height: 280px;
-                width: 200px;
+                height: 100px;
+                width: 300px;
                 position: absolute;
-                left: 1100;
-                top: 400;
-                padding: 0 20 20 20;
-                border: 3px solid black;
+                left: 20;
+                top: 200;
+                padding: 0 0 20 15;
             }
 
             h1 {
@@ -30,6 +30,35 @@
                 padding-top: 50px;
                 margin-bottom: 0px;
                 padding-bottom: 0px;
+            }
+
+            h2, h3, p {
+                padding-left: 10px;
+            }
+
+            h3 {
+                margin-bottom: 5px;
+                margin-top: 0px;
+            }
+
+            h2 {
+                margin-bottom: 0px;
+            }
+
+            p {
+                text-align: left;
+                font-size: 18px;
+                font-style: italic;
+                margin-top: 5px;
+            }
+
+            #filters {
+                position: absolute;
+                height: 800px;
+                width: 400px;
+                top: 200px;
+                left: 1100px;
+                border: 2px solid black;
             }
 
         </style>
@@ -44,7 +73,10 @@
         <div id="panel"></div>
 
         <div id="filters">
-
+            <h2>Tailor Your Search</h2>
+            <p>Hover over an establishment to learn more about it, and click if you want to "save"
+            the restaurant as an option for later!</p>
+            <h3>By Category</h3>
         </div>
 
         <script>
@@ -82,24 +114,6 @@
                 });
 
                 //trees = trees.filter(t=> t.DBH != null && t.DBH >=5 && t.qLegalStatus!= null);
-                console.log(yelps);
-
-                var uniqueCategories = new Set();
-
-                // Iterate through each entry in the dataset
-                yelps.forEach(function(entry) {
-                    // Add the category to the set
-                    uniqueCategories.add(entry.category);
-                });
-
-                // Convert the set to an array if needed
-                var categoriesArray = Array.from(uniqueCategories);
-
-                // Now categoriesArray contains all the unique categories present in your dataset
-                console.log(categoriesArray);
-
-
-
 
                 // var stores = topojson.feature(pittsburgh, pittsburgh);
                 // var neighborhoodsMesh = topojson.mesh(sanfran, sanfran.objects.SFNeighborhoods);
@@ -163,28 +177,25 @@
                     .attr('r',6)
                     .attr("opacity", 0.65);
 
-                  // table.selectAll("tr").remove();
+                  table.selectAll("tr").remove();
 
                 });
 
-                let panelHeader = d3.select("#panel").append("h3").text("Restaurant Information");
-                let table = panelHeader.append("table");
+                let panel = d3.select("#panel").append("h3");
+                let table = panel.append("table");
 
                 function updatePanel(row) {
                     let rowCopy = Object.assign({},row);
 
-                    let keysToKeep = ['name', 'rating', 'category'];
-                    let keyMappings = {
-                        'name': 'Name',
-                        'rating': 'Rating',
-                        'category': 'Category',
-                    };
+                    let name = rowCopy.name;
+                    // panel.text(name);
 
-                    let kvPairs = keysToKeep
-                        .map(key => {
-                            let value = rowCopy[key];
-                            return [keyMappings[key], value];
-                        })
+                    let keysToKeep = ['name','rating', 'category'];
+
+                    let kvPairs = keysToKeep.map(key => {
+                        let value = rowCopy[key];
+                        return [key, value];
+                    });
 
                     table.selectAll("tr").remove();
 
@@ -192,10 +203,22 @@
                         .enter()
                         .append("tr");
 
-                    rows.each(function(d) {
-                        d3.select(this).append("td").attr("class", "bold").text(d[0]);
-                        d3.select(this).append("td").text(d[1]);
+                    rows.append("td")
+                    .text(function(d) {
+                        if (d[0] === 'rating') {
+                            return d[1] + '/5 Stars';
+                        } else {
+                            return d[1];
+                        }
+                    })
+                    .style("font-size", function(d, i) {
+                        return i === 0 ? "20px" : "16px";
+                    })
+                    .style("font-weight", function(d, i) {
+                        return i === 0 ? "bold" : "none";
                     });
+
+
                 };
 
 
