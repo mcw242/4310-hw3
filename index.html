@@ -1,6 +1,5 @@
 <html>
     <head>
-        <h3>Cameron Kull (cak264) & Marie Williams (mcw242)</h3>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://d3js.org/topojson.v3.min.js"></script>
 
@@ -10,10 +9,39 @@
                 flex-direction: row;
                 align-items: flex-start;
             }
+
+            #top {
+                height: 200px;
+                text-align: center;
+            }
+
+            #panel {
+                height: 280px;
+                width: 200px;
+                position: absolute;
+                left: 1100;
+                top: 400;
+                padding: 0 20 20 20;
+                border: 3px solid black;
+            }
+
+            h1 {
+                font-size: 40px;
+                padding-top: 50px;
+                margin-bottom: 0px;
+                padding-bottom: 0px;
+            }
+
         </style>
     </head>
     <body>
-        <svg id="map" width = 1200 height = 900 style = background-color:#d6d6d6></svg>
+        <div id="top">
+            <h1>Pittsburgh Food & Leisure</h1>
+            <h3>Cameron Kull (cak264) & Marie Williams (mcw242)</h3>
+        </div>
+        <svg id="map" width = 1100 height = 825></svg>
+        <!-- style = background-color:#d6d6d6 -->
+        <div id="panel"></div>
 
         <div id="filters">
 
@@ -32,16 +60,54 @@
                 const pittsburgh = await d3.json("pittsburgh.geojson");
                 console.log(pittsburgh);
 
-                let yelps = await d3.csv("yelp_pittsburgh.csv", d3.autoType); 
-                //trees = trees.filter(t=> t.DBH != null && t.DBH >=5 && t.qLegalStatus!= null);   
-                console.log(yelps);  
+                let yelps = await d3.csv("yelp_pittsburgh.csv", d3.autoType);
+                yelps.forEach(function(entry) {
+                    entry.category = entry.category.charAt(0).toUpperCase() + entry.category.slice(1)
+                    if (entry.category === 'Ethnicmarkets') {entry.category = 'Ethnic Market';}
+                    if (entry.category === 'Indpak') {entry.category = 'Indo-Pak';}
+                    if (entry.category === 'Newamerican') {entry.category = 'New American';}
+                });
 
-                //var neighborhoods = topojson.feature(pittsburgh, pittsburgh);
+                //filtering out restaurants outside of map
+                var excludedNames = ["Ou's International", "Biddle's Escape", 'Triangle Bar & Grill', 'Curry Away',
+                'Root 174','A & B Doughnuts','Me Lyng Restaurant','Asian House','Everest Ethnic Restaurant',
+                "Jean-Marc Chatellier's French Bakery","Hog's Head Bar & Grill",'Sapporo Japanese Steakhouse',
+                'Chan An Restaurant',"Sarafino's Pasta and Pizza","Big Daddy's Donuts",'Cafe Delhi','Kasai',
+                'Mad Mex - South Hills','Red Tea House','Cafe io','Hollywood Theater','Amazing Wok','Thai Spoon',
+                'Katana','Il Pizzaiolo','Jade Grille','Arancini House','Little Tokyo', 'Tamarind Savoring India',
+                'Thai Cottage', 'Manpasand Spice Corner',"Parker's PGH",'Fredos Deli'];
+
+                var filteredYelps = yelps.filter(function(entry) {
+                    return !excludedNames.includes(entry.name);
+                });
+
+                //trees = trees.filter(t=> t.DBH != null && t.DBH >=5 && t.qLegalStatus!= null);
+                console.log(yelps);
+
+                var uniqueCategories = new Set();
+
+                // Iterate through each entry in the dataset
+                yelps.forEach(function(entry) {
+                    // Add the category to the set
+                    uniqueCategories.add(entry.category);
+                });
+
+                // Convert the set to an array if needed
+                var categoriesArray = Array.from(uniqueCategories);
+
+                // Now categoriesArray contains all the unique categories present in your dataset
+                console.log(categoriesArray);
+
+
+
+
+                // var stores = topojson.feature(pittsburgh, pittsburgh);
                 // var neighborhoodsMesh = topojson.mesh(sanfran, sanfran.objects.SFNeighborhoods);
                 var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], pittsburgh);
                 var path = d3.geoPath().projection(projection);
 
-                console.log(topojson.feature(pittsburgh, pittsburgh))
+
+                // console.log(topojson.feature(pittsburgh, pittsburgh))
 
                 // construct the visualization
                 map.selectAll("path.main").data(pittsburgh.features)
@@ -63,76 +129,136 @@
                 let colorScale = d3.scaleOrdinal(d3.schemeTableau10);
                 console.log(colorScale("food"));
 
-                viewport.selectAll("circle").data(yelps)
+                viewport.selectAll("circle").data(filteredYelps)
                         .join("circle")
                         .attr("cx", y=> projection([y.longitude, y.latitude])[0])
                         .attr("cy", y=> projection([y.longitude, y.latitude])[1])
-                        .attr("r", 5)
+                        .attr("r", 6)
                         .attr("fill", y=> colorScale(y.type))
-                        .attr("opacity", 0.8);
+                        .attr("opacity", 0.65);
 
+                // hovering
+                let allStores = viewport.selectAll("circle");
 
-            // filters
-            let filters = d3.select("#filters");
-            
-            let categories = [];
-            yelps.forEach(place=>{
-                if (categories.includes(place.category)==false){
-                    categories.push(place.category)
+                allStores.on("mouseover", function(event, d) {
+
+                    d3.select(this)
+                        .raise()
+                        .transition().duration(100)
+                        .attr("stroke","black")
+                        .attr("stroke-width", 3)
+                        .attr("opacity", 1)
+                        .attr('r', 10);
+
+                    updatePanel(d);
+
+                });
+
+                allStores.on("mouseout", function(event, d) {
+
+                  d3.select(this)
+                    .transition().duration(200)
+                    .attr("stroke","")
+                    .attr("stroke-width", 0)
+                    .attr('r',6)
+                    .attr("opacity", 0.65);
+
+                  // table.selectAll("tr").remove();
+
+                });
+
+                let panelHeader = d3.select("#panel").append("h3").text("Restaurant Information");
+                let table = panelHeader.append("table");
+
+                function updatePanel(row) {
+                    let rowCopy = Object.assign({},row);
+
+                    let keysToKeep = ['name', 'rating', 'category'];
+                    let keyMappings = {
+                        'name': 'Name',
+                        'rating': 'Rating',
+                        'category': 'Category',
+                    };
+
+                    let kvPairs = keysToKeep
+                        .map(key => {
+                            let value = rowCopy[key];
+                            return [keyMappings[key], value];
+                        })
+
+                    table.selectAll("tr").remove();
+
+                    let rows = table.selectAll("tr").data(kvPairs)
+                        .enter()
+                        .append("tr");
+
+                    rows.each(function(d) {
+                        d3.select(this).append("td").attr("class", "bold").text(d[0]);
+                        d3.select(this).append("td").text(d[1]);
+                    });
                 };
-            });
-            categories.sort();
 
 
-            let categoryFilters = filters.append("g");
-            let filterID = 0;
-            categories.forEach(category=>{
-                let filterBlock = categoryFilters.append("g")
-                                                 .attr("class", "filter");
-                filterBlock.append("input")
-                           .attr("type", "checkbox")
-                           .attr("id", "a"+filterID.toString())
-                           .attr("class", "checkbox");
-                filterBlock.append("label")
-                           .attr("for", "a"+filterID.toString())
-                           .attr("class", "a"+filterID.toString())
-                           .text(category);
-                filterID+=1;
-            });
 
-            function updateFilter(){
-                var checkboxId = d3.select(this).attr("id");
-                var isChecked = d3.select(this).property("checked");
-                
-                if (isChecked) {
-                    handleCheckboxChecked(checkboxId);
-                } else {
-                    handleCheckboxUnchecked(checkboxId);
-                }
+                // filters
+                let filters = d3.select("#filters");
+
+                let categories = [];
+                yelps.forEach(place=>{
+                    if (categories.includes(place.category)==false){
+                        categories.push(place.category)
+                    };
+                });
+                categories.sort();
+
+
+                let categoryFilters = filters.append("g");
+                let filterID = 0;
+                categories.forEach(category=>{
+                    let filterBlock = categoryFilters.append("g")
+                                                     .attr("class", "filter");
+                    filterBlock.append("input")
+                               .attr("type", "checkbox")
+                               .attr("id", "a"+filterID.toString())
+                               .attr("class", "checkbox");
+                    filterBlock.append("label")
+                               .attr("for", "a"+filterID.toString())
+                               .attr("class", "a"+filterID.toString())
+                               .text(category);
+                    filterID+=1;
+                });
+
+                function updateFilter(){
+                    var checkboxId = d3.select(this).attr("id");
+                    var isChecked = d3.select(this).property("checked");
+
+                    if (isChecked) {
+                        handleCheckboxChecked(checkboxId);
+                    } else {
+                        handleCheckboxUnchecked(checkboxId);
+                    }
+                };
+
+                // Function to handle checkbox checked event
+                function handleCheckboxChecked(checkboxId) {
+                    console.log("Checkbox with id " + checkboxId + " was checked.");
+                    // Perform actions when checkbox is checked
+                };
+
+                // Function to handle checkbox unchecked event
+                function handleCheckboxUnchecked(checkboxId) {
+                    console.log("Checkbox with id " + checkboxId + " was unchecked.");
+                    // Perform actions when checkbox is unchecked
+                };
+
+                d3.selectAll("input[type='checkbox']").on("click", updateFilter);
+
+
+
             };
 
-            // Function to handle checkbox checked event
-            function handleCheckboxChecked(checkboxId) {
-                console.log("Checkbox with id " + checkboxId + " was checked.");
-                // Perform actions when checkbox is checked
-            };
-
-            // Function to handle checkbox unchecked event
-            function handleCheckboxUnchecked(checkboxId) {
-                console.log("Checkbox with id " + checkboxId + " was unchecked.");
-                // Perform actions when checkbox is unchecked
-            };
-
-            d3.selectAll("input[type='checkbox']").on("click", updateFilter);
-
-
-
-            }  
-            
-        
-            
             requestData();
-                
+
         </script>
     </body>
 </html>
