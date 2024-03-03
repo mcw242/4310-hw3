@@ -7,7 +7,7 @@
         <style>
             .filter {
                 display: flex;
-                flex-direction: column;
+                flex-direction: row;
                 align-items: flex-start;
             }
         </style>
@@ -88,15 +88,43 @@
             let filterID = 0;
             categories.forEach(category=>{
                 let filterBlock = categoryFilters.append("g")
-                                                 .attr("class", "filter")
-                                                 .append("input");
-                filterBlock.attr("type", "checkbox")
-                           .attr("id", "a"+filterID.toString());
+                                                 .attr("class", "filter");
+                filterBlock.append("input")
+                           .attr("type", "checkbox")
+                           .attr("id", "a"+filterID.toString())
+                           .attr("class", "checkbox");
                 filterBlock.append("label")
                            .attr("for", "a"+filterID.toString())
+                           .attr("class", "a"+filterID.toString())
                            .text(category);
                 filterID+=1;
             });
+
+            function updateFilter(){
+                var checkboxId = d3.select(this).attr("id");
+                var isChecked = d3.select(this).property("checked");
+                
+                if (isChecked) {
+                    handleCheckboxChecked(checkboxId);
+                } else {
+                    handleCheckboxUnchecked(checkboxId);
+                }
+            };
+
+            // Function to handle checkbox checked event
+            function handleCheckboxChecked(checkboxId) {
+                console.log("Checkbox with id " + checkboxId + " was checked.");
+                // Perform actions when checkbox is checked
+            };
+
+            // Function to handle checkbox unchecked event
+            function handleCheckboxUnchecked(checkboxId) {
+                console.log("Checkbox with id " + checkboxId + " was unchecked.");
+                // Perform actions when checkbox is unchecked
+            };
+
+            d3.selectAll("input[type='checkbox']").on("click", updateFilter);
+
 
 
             }  
