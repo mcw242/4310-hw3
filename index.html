@@ -54,11 +54,17 @@
 
             #filters {
                 position: absolute;
-                height: 800px;
+                height: 900px;
                 width: 400px;
                 top: 200px;
                 left: 1100px;
                 border: 2px solid black;
+            }
+
+            .neighborhoodFilters {
+                position: absolute;
+                top: 269px;
+                left: 200px;
             }
 
         </style>
@@ -228,12 +234,20 @@
                 let filters = d3.select("#filters");
 
                 let categories = [];
-                yelps.forEach(place=>{
+                filteredYelps.forEach(place=>{
                     if (categories.includes(place.category)==false){
                         categories.push(place.category)
                     };
                 });
                 categories.sort();
+
+                let neighborhoods = [];
+                filteredYelps.forEach(place=>{
+                    if (neighborhoods.includes(place.neighborhood)==false){
+                        neighborhoods.push(place.neighborhood)
+                    };
+                });
+                neighborhoods.sort();
 
 
                 let categoryFilters = filters.append("g");
@@ -244,7 +258,8 @@
                     filterBlock.append("input")
                                .attr("type", "checkbox")
                                .attr("id", "a"+filterID.toString())
-                               .attr("class", "checkbox");
+                               .attr("class", "checkbox")
+                               .property("checked", true);
                     filterBlock.append("label")
                                .attr("for", "a"+filterID.toString())
                                .attr("class", "a"+filterID.toString())
@@ -252,36 +267,96 @@
                     filterID+=1;
                 });
 
-                function updateFilter(){
+                let neighborhoodFilters = filters.append("g")
+                                                .attr("transform", `translate(${10}, ${10})`)
+                                                .attr("class", "neighborhoodFilters");
+                neighborhoods.forEach(neighborhood=>{
+                    let filterBlock = neighborhoodFilters.append("g")
+                                                     .attr("class", "filter");
+                    filterBlock.append("input")
+                               .attr("type", "checkbox")
+                               .attr("id", "a"+filterID.toString())
+                               .attr("class", "checkbox")
+                               .property("checked", true);
+                    filterBlock.append("label")
+                               .attr("for", "a"+filterID.toString())
+                               .attr("class", "a"+filterID.toString())
+                               .text(neighborhood);
+                    filterID+=1;
+                });
+
+                function updateCategoryFilter(){
                     var checkboxId = d3.select(this).attr("id");
                     var isChecked = d3.select(this).property("checked");
+                    var categoryLabel = d3.select("label."+checkboxId).text();
 
                     if (isChecked) {
-                        handleCheckboxChecked(checkboxId);
+                        handleCheckboxChecked(categoryLabel);
                     } else {
-                        handleCheckboxUnchecked(checkboxId);
+                        handleCheckboxUnchecked(categoryLabel);
+                    }
+                };
+
+                function updateNeighborhoodFilter(){
+                    var checkboxId = d3.select(this).attr("id");
+                    var isChecked = d3.select(this).property("checked");
+                    var neighborhoodLabel = d3.select("label."+checkboxId).text();
+
+                    if (isChecked) {
+                        handleCheckboxChecked(neighborhoodLabel);
+                    } else {
+                        handleCheckboxUnchecked(neighborhoodLabel);
                     }
                 };
 
                 // Function to handle checkbox checked event
-                function handleCheckboxChecked(checkboxId) {
-                    console.log("Checkbox with id " + checkboxId + " was checked.");
-                    // Perform actions when checkbox is checked
+                function handleCheckboxChecked(input) {
+  
+                    allStores.each(function(s) {
+                        if (s.category == input){
+                            d3.select(this)
+                              .transition().duration(200)
+                              .attr("r", 6);
+                        }
+                        else if (s.neighborhood == input){
+                            d3.select(this)
+                              .transition().duration(200)
+                              .attr("r", 6);
+                        };
+                    
+                    })
+
                 };
 
                 // Function to handle checkbox unchecked event
-                function handleCheckboxUnchecked(checkboxId) {
-                    console.log("Checkbox with id " + checkboxId + " was unchecked.");
+                function handleCheckboxUnchecked(input) {
+                    //console.log("Checkbox with id " + checkboxId + " was unchecked.");
                     // Perform actions when checkbox is unchecked
+
+                    allStores.each(function(s) {
+
+                        if (s.category == input){
+                            d3.select(this)
+                              .transition().duration(200)
+                              .attr("r", 0);
+                        }
+                        else if (s.neighborhood == input){
+                            d3.select(this)
+                              .transition().duration(200)
+                              .attr("r", 0);
+                        };
+                    })
                 };
 
-                d3.selectAll("input[type='checkbox']").on("click", updateFilter);
+                d3.selectAll("input[type='checkbox']").on("click", updateCategoryFilter);
+                d3.selectAll("input[type='checkbox']").on("click", updateNeighborhoodFilter);
 
-
-
+                console.log("Some of the circles span across multiple neighborhoods, some of the neighborhood buttons don't connect to any points. Check this out further.")
+                console.log("Also, the filters cancel each other out for those that match two of the clicked filters. Figure this out.")
             };
 
             requestData();
+            
 
         </script>
     </body>
