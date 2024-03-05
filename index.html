@@ -73,6 +73,18 @@
                 left: 200px;
             }
 
+            #selectAll {
+                position: absolute;
+                top: 850px;
+                left: 10px;
+            }
+
+            #deselectAll {
+                position: absolute;
+                top: 850px;
+                left: 85px;
+            }
+
         </style>
     </head>
     <body>
@@ -92,6 +104,8 @@
             <svg id="rating" width = 400 height = 80></svg>
             <h3>By Category</h3>
             <h3 id="neighborhoodHeading">By Neighborhood</h3>
+            <button id="selectAll" onclick="selectAllButton('selectAll')">Select All</button>
+            <button id="deselectAll" onclick="selectAllButton('deselectAll')">Deselect All</button>
         </div>
 
         <script>
@@ -367,12 +381,33 @@
                     })
                 };
 
+                
+
                 d3.selectAll("input[type='checkbox']").on("click", updateCategoryFilter);
                 d3.selectAll("input[type='checkbox']").on("click", updateNeighborhoodFilter);
 
-                console.log("Some of the circles span across multiple neighborhoods, some of the neighborhood buttons don't connect to any points. Check this out further.")
-                console.log("Also, the filters cancel each other out for those that match two of the clicked filters. Figure this out.")
+                // d3.select("button.selectAll").on("click", selectAllButton("selectAll"));
+                // d3.select("button.deselectAll").on("click", selectAllButton("deselectAll"));
             };
+
+            function selectAllButton(id){
+                    
+                    if (id == "selectAll"){
+                        d3.selectAll("input[type='checkbox']").property("checked", true);
+                        d3.selectAll("circle")
+                            .transition().duration(200)
+                            .attr("r", 6);
+                        
+                    }
+                    else{
+                        d3.selectAll("input[type='checkbox']").property("checked", false);
+                        d3.selectAll("circle")
+                            .transition().duration(200)
+                            .attr("r", 0);
+                    }
+                };
+
+            
 
             requestData();
             
