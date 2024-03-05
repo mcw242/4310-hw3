@@ -67,6 +67,12 @@
                 left: 200px;
             }
 
+            #neighborhoodHeading {
+                position: absolute;
+                top: 242px;
+                left: 200px;
+            }
+
         </style>
     </head>
     <body>
@@ -85,6 +91,7 @@
             <h3>By Rating</h3>
             <svg id="rating" width = 400 height = 80></svg>
             <h3>By Category</h3>
+            <h3 id="neighborhoodHeading">By Neighborhood</h3>
         </div>
 
         <script>
@@ -285,6 +292,8 @@
                     filterID+=1;
                 });
 
+                let uncheckedFilters = [];
+
                 function updateCategoryFilter(){
                     var checkboxId = d3.select(this).attr("id");
                     var isChecked = d3.select(this).property("checked");
@@ -311,9 +320,19 @@
 
                 // Function to handle checkbox checked event
                 function handleCheckboxChecked(input) {
-  
+
+                    for (let i = 0; i < uncheckedFilters.length; i++) { 
+                        
+                        if (uncheckedFilters[i] === input) { 
+                            uncheckedFilters.splice(i, 1); 
+                        }
+                    }
+                
                     allStores.each(function(s) {
-                        if (s.category == input){
+                        if (uncheckedFilters.includes(s.category) || uncheckedFilters.includes(s.neighborhood)){
+                            
+                        }
+                        else if (s.category == input){
                             d3.select(this)
                               .transition().duration(200)
                               .attr("r", 6);
@@ -330,9 +349,9 @@
 
                 // Function to handle checkbox unchecked event
                 function handleCheckboxUnchecked(input) {
-                    //console.log("Checkbox with id " + checkboxId + " was unchecked.");
-                    // Perform actions when checkbox is unchecked
 
+                    uncheckedFilters.push(input);
+        
                     allStores.each(function(s) {
 
                         if (s.category == input){
