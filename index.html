@@ -17,12 +17,13 @@
             }
 
             #panel {
-                height: 100px;
-                width: 300px;
+                height: 55px;
+                width: auto;
                 position: absolute;
-                left: 20;
-                top: 200;
-                padding: 0 0 20 15;
+                left: -5;
+                top: 205;
+                padding: 0 5 20 5;
+                background-color: white;
             }
 
             h1 {
@@ -217,13 +218,17 @@
 
                 allStores.on("mouseover", function(event, d) {
 
+                    var currentK = d3.zoomTransform(map.node()).k;
+                    var radius = currentK > 1.3 ? 12/currentK : 10;
+                    var stroke = 3/currentK;
+
                     d3.select(this)
                         .raise()
                         .transition().duration(100)
                         .attr("stroke","black")
-                        .attr("stroke-width", 3)
+                        .attr("stroke-width", stroke)
                         .attr("opacity", 1)
-                        .attr('r', 10);
+                        .attr('r', radius);
 
                     updatePanel(d);
 
@@ -231,12 +236,15 @@
 
                 allStores.on("mouseout", function(event, d) {
 
-                  d3.select(this)
-                    .transition().duration(200)
-                    .attr("stroke","")
-                    .attr("stroke-width", 0)
-                    .attr('r',6)
-                    .attr("opacity", 0.65);
+                    var currentK = d3.zoomTransform(map.node()).k;
+                    var radius = currentK > 1.1 ? 8/currentK : 6/currentK;
+
+                    d3.select(this)
+                        .transition().duration(200)
+                        .attr("stroke","")
+                        .attr("stroke-width", 0)
+                        .attr('r',radius)
+                        .attr("opacity", 0.65);
 
                   table.selectAll("tr").remove();
 
@@ -302,7 +310,7 @@
 
                 function plotZoomed( { transform } ) {
                     map.attr("transform", transform);
-                    if (transform.k > 1.1) {
+                    if (transform.k > 1.3) {
                         circles.attr("r", 8 / transform.k);
                     } else {
                         circles.attr("r", 6);
