@@ -94,6 +94,10 @@
                 border: 2px solid black;
             }
 
+            .bold {
+                font-weight: bold;
+            }
+
         </style>
     </head>
     <body>
@@ -441,7 +445,7 @@
 
                 // make 'save for later' function
                 function saveForLater(d){
-                    let savedBox = d3.select("svg#svgSave").append("g");
+                    var savedBox = d3.select("svg#svgSave").append("g");
                     savedBox.append("rect")
                             .attr("x", 20)
                             .attr("y", 30)
@@ -450,43 +454,55 @@
                             .attr("fill", 'none')
                             .attr("stroke", "black");
 
-                    //let rowCopy = Object.assign({},row);
+                    let dCopy = Object.assign({},d);
 
                     let keysToKeep = ['name', 'rating', 'category', 'neighborhood', 'review count', 'url'];
-                    // let keyMappings = {
-                    //     'pclass': 'Class',
-                    //     'survived': 'Survived',
-                    //     'name': 'Name',
-                    //     'sex': 'Sex',
-                    //     'age': 'Age',
-                    //     'fare': 'Fare'
-                    // };
+                    let keyMappings = {
+                        'rating': 'Rating',
+                        'category': 'Category',
+                        'name': 'Name',
+                        'neighborhood': 'Neighborhood',
+                        'review count': 'Review Count',
+                        'url': 'Website'
+                    };
 
-                    // let kvPairs = keysToKeep
-                    //     .map(key => {
-                    //         let value = rowCopy[key];
-                    //         if (key === 'pclass') {
-                    //             value = convertPclass(value);
-                    //         }
-                    //         else if (key === 'survived'){
-                    //             value = convertSurvived(value);
-                    //         }
-                    //         return [keyMappings[key], value];
-                    //     })
-                    //     .filter(([key, value]) => value !== null);
+                    let kvPairs = keysToKeep
+                        .map(key => {
+                            let value = dCopy[key];
+                            // if (key === 'pclass') {
+                            //     value = convertPclass(value);
+                            // }
+                            // else if (key === 'survived'){
+                            //     value = convertSurvived(value);
+                            // }
+                            return [keyMappings[key], value];
+                        })
+                        .filter(([key, value]) => value !== null);
 
-                    // console.log(kvPairs);
+                    console.log(kvPairs);
 
-                    // table.selectAll("tr").remove();
 
-                    // let rows = table.selectAll("tr").data(kvPairs)
-                    //     .enter()
-                    //     .append("tr");
+                    savedBox.append("g").attr("class", "keys");
+                    savedBox.append("g").attr("class", "values");
 
-                    // rows.each(function(d) {
-                    //     d3.select(this).append("td").attr("class", "bold").text(d[0]);
-                    //     d3.select(this).append("td").text(d[1]);
-                    // });
+                    var xPos = 30;
+                    var yPos = 90
+
+                    kvPairs.forEach(function(x) {
+                        
+                        d3.select("g.keys").append("text")
+                                           .attr("class", "bold")
+                                           .text(x[0])
+                                           .attr("x", xPos)
+                                           .attr("y", yPos);
+
+                        d3.select("g.values").append("text")
+                                           .text(x[1])
+                                           .attr("x", xPos+110)
+                                           .attr("y", yPos);
+                        
+                        yPos+=40;
+                    });
                 };
                 
                 allStores.on("click", function(d){
