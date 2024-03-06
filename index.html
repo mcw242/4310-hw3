@@ -85,6 +85,15 @@
                 left: 85px;
             }
 
+            #saveForLater {
+                position: absolute;
+                height: 500px;
+                width: 1400px;
+                top: 1125px;
+                left: 100px;
+                border: 2px solid black;
+            }
+
         </style>
     </head>
     <body>
@@ -106,6 +115,12 @@
             <h3 id="neighborhoodHeading">By Neighborhood</h3>
             <button id="selectAll">Select All</button>
             <button id="deselectAll">Deselect All</button>
+        </div>
+
+        <div id="saveForLater">
+            <h2>Save for Later</h2>
+            <p>Review the details of your saved establishments and compare them to aid in your decision.</p>
+            <svg id="svgSave" width="1400" height="500px"></svg>
         </div>
 
         <script>
@@ -423,7 +438,63 @@
                             handleCheckboxUnchecked(label.text());
                     })
                 });
+
+                // make 'save for later' function
+                function saveForLater(d){
+                    let savedBox = d3.select("svg#svgSave").append("g");
+                    savedBox.append("rect")
+                            .attr("x", 20)
+                            .attr("y", 30)
+                            .attr("height", 350)
+                            .attr("width", 300)
+                            .attr("fill", 'none')
+                            .attr("stroke", "black");
+                            let rowCopy = Object.assign({},row);
+
+                    let keysToKeep = ['name', 'rating', 'category', 'neighborhood', 'review count', 'url'];
+                    // let keyMappings = {
+                    //     'pclass': 'Class',
+                    //     'survived': 'Survived',
+                    //     'name': 'Name',
+                    //     'sex': 'Sex',
+                    //     'age': 'Age',
+                    //     'fare': 'Fare'
+                    // };
+
+                    // let kvPairs = keysToKeep
+                    //     .map(key => {
+                    //         let value = rowCopy[key];
+                    //         if (key === 'pclass') {
+                    //             value = convertPclass(value);
+                    //         }
+                    //         else if (key === 'survived'){
+                    //             value = convertSurvived(value);
+                    //         }
+                    //         return [keyMappings[key], value];
+                    //     })
+                    //     .filter(([key, value]) => value !== null);
+
+                    // console.log(kvPairs);
+
+                    // table.selectAll("tr").remove();
+
+                    // let rows = table.selectAll("tr").data(kvPairs)
+                    //     .enter()
+                    //     .append("tr");
+
+                    // rows.each(function(d) {
+                    //     d3.select(this).append("td").attr("class", "bold").text(d[0]);
+                    //     d3.select(this).append("td").text(d[1]);
+                    // });
+                };
+                
+                allStores.on("click", function(d){
+                    let clickedOn = d3.select(this).datum();
+                    saveForLater(clickedOn);
+                });
             };
+
+            
 
 
             requestData();
