@@ -133,7 +133,19 @@
             const mapWidth = svg.attr("width");
             const mapHeight = svg.attr("height");
             let map = svg.append("g");
-            let viewport = svg.append("g");
+            const chartArea = map.append("g")
+            // let viewport = chartArea.append("g");
+
+
+            map.append("defs").append("clipPath")
+                .attr("id","chartClip")
+                .append("rect").attr("x",0)
+                                .attr("y",0)
+                                .attr("width",mapWidth)
+                                .attr("height",mapHeight);
+
+            chartArea.attr("clip-path","url(#chartClip)");
+
 
             // map setup
             const requestData = async function(){
@@ -155,7 +167,7 @@
                 'Chan An Restaurant',"Sarafino's Pasta and Pizza","Big Daddy's Donuts",'Cafe Delhi','Kasai',
                 'Mad Mex - South Hills','Red Tea House','Cafe io','Hollywood Theater','Amazing Wok','Thai Spoon',
                 'Katana','Il Pizzaiolo','Jade Grille','Arancini House','Little Tokyo', 'Tamarind Savoring India',
-                'Thai Cottage', 'Manpasand Spice Corner',"Parker's PGH",'Fredos Deli', "Big Shot Bob's House of Wings", 
+                'Thai Cottage', 'Manpasand Spice Corner',"Parker's PGH",'Fredos Deli', "Big Shot Bob's House of Wings",
                 "Hog's Head Bar & Grill", 'North Hills Grill', 'Schorr Bakery', "Yeung's House"];
 
                 var filteredYelps = yelps.filter(function(entry) {
@@ -192,7 +204,7 @@
 
                 let colorScale = d3.scaleOrdinal(d3.schemeTableau10);
 
-                viewport.selectAll("circle").data(filteredYelps)
+                let circles = map.selectAll("circle").data(filteredYelps)
                         .join("circle")
                         .attr("cx", y=> projection([y.longitude, y.latitude])[0])
                         .attr("cy", y=> projection([y.longitude, y.latitude])[1])
@@ -201,7 +213,7 @@
                         .attr("opacity", 0.65);
 
                 // hovering
-                let allStores = viewport.selectAll("circle");
+                let allStores = map.selectAll("circle");
 
                 allStores.on("mouseover", function(event, d) {
 
@@ -269,6 +281,35 @@
 
 
                 };
+
+                // zooming
+
+                chartArea.append("rect").attr("x",0).attr("y",0)
+                         .attr("width",mapWidth).attr("height",mapHeight)
+                         .attr("fill","none")
+                         .style("pointer-events","all");
+
+
+                let zoomExtent = [[0,0],[mapWidth,mapHeight]];
+                let translateExtent = [[-100,-100],[mapWidth+100,mapHeight+100]];
+                var plotZoom = d3.zoom()
+                                .extent(zoomExtent)
+                                .translateExtent(translateExtent)
+                                .scaleExtent([1,10])
+                                .on("zoom", plotZoomed);
+
+                map.call(plotZoom);
+
+                function plotZoomed( { transform } ) {
+                    map.attr("transform", transform);
+                    if (transform.k > 1.1) {
+                        circles.attr("r", 8 / transform.k);
+                    } else {
+                        circles.attr("r", 6);
+                    }
+                    console.log(transform);
+                }
+
 
 
                 // filters
@@ -354,12 +395,12 @@
 
                 // Function to handle checkbox checked event
                 function handleCheckboxChecked(input) {
-                    for (let i = 0; i < uncheckedFilters.length; i++) { 
-                        if (uncheckedFilters[i] === input) { 
-                            uncheckedFilters.splice(i, 1); 
+                    for (let i = 0; i < uncheckedFilters.length; i++) {
+                        if (uncheckedFilters[i] === input) {
+                            uncheckedFilters.splice(i, 1);
                         }
                     }
-                
+
                     allStores.each(function(s) {
                         if (uncheckedFilters.includes(s.category) || uncheckedFilters.includes(s.neighborhood)){
                         }
@@ -373,7 +414,7 @@
                               .transition().duration(200)
                               .attr("r", 6);
                         };
-                    
+
                     })
 
                 };
@@ -382,7 +423,7 @@
                 function handleCheckboxUnchecked(input) {
 
                     uncheckedFilters.push(input);
-        
+
                     allStores.each(function(s) {
 
                         if (s.category == input){
@@ -399,13 +440,13 @@
                 };
 
                 // function selectAllButton(id){
-                    
+
                 //     if (id == "selectAll"){
                 //         d3.selectAll("input[type='checkbox']").property("checked", true);
                 //         d3.selectAll("circle")
                 //             .transition().duration(200)
                 //             .attr("r", 6);
-                        
+
                 //     }
                 //     else{
                 //         // let boxes = d3.selectAll("input[type='checkbox']");
@@ -489,7 +530,7 @@
                     var yPos = 90
 
                     kvPairs.forEach(function(x) {
-                        
+
                         d3.select("g.keys").append("text")
                                            .attr("class", "bold")
                                            .text(x[0])
@@ -500,22 +541,22 @@
                                            .text(x[1])
                                            .attr("x", xPos+110)
                                            .attr("y", yPos);
-                        
+
                         yPos+=40;
                     });
                 };
-                
+
                 allStores.on("click", function(d){
                     let clickedOn = d3.select(this).datum();
                     saveForLater(clickedOn);
                 });
             };
 
-            
+
 
 
             requestData();
-            
+
 
         </script>
     </body>
