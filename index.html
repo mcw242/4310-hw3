@@ -75,13 +75,13 @@
 
             .neighborhoodFilters {
                 position: absolute;
-                top: 285px;
+                top: 305px;
                 left: 200px;
             }
 
             #neighborhoodHeading {
                 position: absolute;
-                top: 260px;
+                top: 280px;
                 left: 200px;
             }
 
@@ -127,7 +127,7 @@
             <p>Hover over an establishment to learn more about it, and click if you want to "save"
             the restaurant as an option for later! You can also zoom in to get a closer look at the denser areas. </p>
             <h3>By Rating</h3>
-            <svg id="rating" width = 400 height = 80></svg>
+            <svg id="rating" width = 400 height = 100></svg>
             <h3>By Category</h3>
             <h3 id="neighborhoodHeading">By Neighborhood</h3>
             <button id="selectAll">Select All</button>
@@ -148,6 +148,11 @@
             let map = svg.append("g");
             const chartArea = map.append("g")
             const legend = d3.select("#legend");
+            const rating = d3.select("#rating");
+            const ratingWidth = rating.attr("width");
+            const ratingHeight = rating.attr("height");
+            const ratingChartArea = rating.append("g")
+            const margins = { "top": 5, "right": 5, "bottom": 20, "left": 20};
             // let viewport = chartArea.append("g");
 
 
@@ -281,8 +286,6 @@
                 let colorScale = d3.scaleOrdinal(d3.schemeTableau10);
                 console.log(colorScale.range());
 
-
-
                 let circles = map.selectAll("circle").data(filteredYelps)
                         .join("circle")
                         .attr("cx", y=> projection([y.longitude, y.latitude])[0])
@@ -396,6 +399,33 @@
                     // console.log(transform);
                 }
 
+                // rating brush filter
+                let bin = d3.bin().value(d=> d.rating)
+                              .thresholds([2.5,3,3.5,4,4.5,5]);
+
+                let ratingBins = bin(filteredYelps);
+                console.log(ratingBins);
+
+                const ratingXScale = d3.scaleLinear().domain(d3.extent(filteredYelps, d => d['rating']))
+                                     .range([40, ratingWidth-60]);
+                const ratingYScale = d3.scaleLinear().domain([0, d3.max(ratingBins, function(d){return d.length})])
+                                     .range([ratingHeight-10, 30]);
+
+
+                let BottomAxis = d3.axisBottom(ratingXScale);
+                ratingChartArea.append('g')
+                    .attr('transform',`translate(${margins.left-10},${ratingHeight-20})`)
+                    .call(BottomAxis);
+
+                let bars = ratingChartArea.append("g").attr("transform", `translate(${margins.left-40}, ${margins.top-25})`);
+                bars.selectAll("rect").data(ratingBins)
+                        .join("rect")
+                        .attr("x", function(d){return ratingXScale(d.x0)})
+                        .attr("y", d=> ratingYScale(d.length))
+                        .attr("height", d=> ratingHeight-ratingYScale(d.length))
+                        .attr("width", 60)
+                        .attr("fill", "steelblue")
+                        .attr("stroke", "black");
 
 
                 // filters
