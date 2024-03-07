@@ -418,7 +418,8 @@
                                      .range([ratingHeight-10, 30]);
 
 
-                let BottomAxis = d3.axisBottom(ratingXScale);
+                const tickValues = [2.5, 3, 3.5, 4, 4.5, 5];
+                let BottomAxis = d3.axisBottom(ratingXScale).tickValues(tickValues);
                 ratingChartArea.append('g')
                     .attr('transform',`translate(${margins.left-10},${ratingHeight-20})`)
                     .call(BottomAxis);
@@ -432,6 +433,12 @@
                         .attr("width", 60)
                         .attr("fill", "steelblue")
                         .attr("stroke", "black");
+
+                let brushGroup = ratingChartArea.append("g").attr("class","brush");
+                let brush = d3.brush()
+                    .extent([[0,0], [ratingWidth,ratingHeight]])
+                    // .on("brush", brushed)
+                brushGroup.call(brush)
 
 
                 // filters
