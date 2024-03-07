@@ -53,6 +53,17 @@
                 margin-top: 5px;
             }
 
+            #legend {
+                position: absolute;
+                height: 48px;
+                width: 410px;
+                left: 680px;
+                top: 200px;
+                border: 2px solid black;
+                z-index: 1;
+                background-color: white;
+            }
+
             #filters {
                 position: absolute;
                 height: 900px;
@@ -64,13 +75,13 @@
 
             .neighborhoodFilters {
                 position: absolute;
-                top: 269px;
+                top: 285px;
                 left: 200px;
             }
 
             #neighborhoodHeading {
                 position: absolute;
-                top: 242px;
+                top: 260px;
                 left: 200px;
             }
 
@@ -106,14 +117,15 @@
             <h1>Pittsburgh Food & Leisure</h1>
             <h3>Cameron Kull (cak264) & Marie Williams (mcw242)</h3>
         </div>
-        <svg id="map" width = 1100 height = 825></svg>
+        <svg id="map" width = 1080 height = 825></svg>
         <!-- style = background-color:#d6d6d6 -->
         <div id="panel"></div>
+        <svg id="legend"></div>
 
         <div id="filters">
             <h2>Tailor Your Search</h2>
             <p>Hover over an establishment to learn more about it, and click if you want to "save"
-            the restaurant as an option for later!</p>
+            the restaurant as an option for later! You can also zoom in to get a closer look at the denser areas. </p>
             <h3>By Rating</h3>
             <svg id="rating" width = 400 height = 80></svg>
             <h3>By Category</h3>
@@ -135,7 +147,70 @@
             const mapHeight = svg.attr("height");
             let map = svg.append("g");
             const chartArea = map.append("g")
+            const legend = d3.select("#legend");
             // let viewport = chartArea.append("g");
+
+
+            //legend
+            legend.append("circle")
+                .attr("cx", 15)
+                .attr("cy", 21)
+                .attr("r", 8)
+                .attr("fill", "#4e79a7");
+
+            legend.append("text")
+                .attr("x", 27)
+                .attr("y", 26)
+                .attr("font-size", 18)
+                .text("Food")
+
+            legend.append("circle")
+                .attr("cx", 85)
+                .attr("cy", 21)
+                .attr("r", 8)
+                .attr("fill", "#f28e2c");
+
+            legend.append("text")
+                .attr("x", 97)
+                .attr("y", 26)
+                .attr("font-size", 18)
+                .text("Nightlife")
+
+            legend.append("circle")
+                .attr("cx", 185)
+                .attr("cy", 21)
+                .attr("r", 8)
+                .attr("fill", "#e15759");
+
+            legend.append("text")
+                .attr("x", 197)
+                .attr("y", 26)
+                .attr("font-size", 18)
+                .text("Arts")
+
+            legend.append("circle")
+                .attr("cx", 245)
+                .attr("cy", 21)
+                .attr("r", 8)
+                .attr("fill", "#76b7b2");
+
+            legend.append("text")
+                .attr("x", 257)
+                .attr("y", 26)
+                .attr("font-size", 18)
+                .text("Shopping")
+
+            legend.append("circle")
+                .attr("cx", 345)
+                .attr("cy", 21)
+                .attr("r", 8)
+                .attr("fill", "#59a14f");
+
+            legend.append("text")
+                .attr("x", 357)
+                .attr("y", 26)
+                .attr("font-size", 18)
+                .text("Active")
 
 
             map.append("defs").append("clipPath")
@@ -204,6 +279,9 @@
                 // add circles
 
                 let colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+                console.log(colorScale.range());
+
+
 
                 let circles = map.selectAll("circle").data(filteredYelps)
                         .join("circle")
@@ -315,7 +393,7 @@
                     } else {
                         circles.attr("r", 6);
                     }
-                    console.log(transform);
+                    // console.log(transform);
                 }
 
 
