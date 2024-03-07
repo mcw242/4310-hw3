@@ -406,11 +406,14 @@
                 function plotZoomed( { transform } ) {
                     map.attr("transform", transform);
                     circles.each(function(d) {
-                        if (uncheckedFilters.includes(d.category) || uncheckedFilters.includes(d.neighborhood)){
+                        if (uncheckedFilters.includes(d.category) || uncheckedFilters.includes(d.neighborhood)
+                                                                  || !filteredArray.includes(d.name)
+                                                              ){
                             d3.select(this).attr("r", 0);
                         } else {
+                            console.log(transform);
                             if (transform.k > 1.3) {
-                                d3.select(this).attr("r", 8 / transform.k);
+                                d3.select(this).attr("r", 8/transform.k);
                             } else {
                                 d3.select(this).attr("r", 6);
                             }
@@ -450,8 +453,40 @@
                 let brushGroup = ratingChartArea.append("g").attr("class","brush");
                 let brush = d3.brush()
                     .extent([[0,0], [ratingWidth,ratingHeight]])
-                    // .on("brush", brushed)
+                    .on("brush", brushed)
                 brushGroup.call(brush)
+
+                function brushed(event) {
+
+                    if (event.sourceEvent === undefined) {
+                        return;
+                    }
+
+                    const [x0, x1] = event.selection;
+                    const ratingRange = [ratingXScale.invert(x0[0]), ratingXScale.invert(x1[0])];
+                    const filteredList = filteredYelps.filter(d => d.rating >= ratingRange[0] && d.rating <= ratingRange[1]);
+                    let filteredArray = [];
+
+                    filteredArray = filteredList.map(function(d) {
+                        return d.name;
+                    });
+
+                    allStores.each(function(d) {
+                        var currentK = d3.zoomTransform(map.node()).k;
+                        var radius = currentK > 1.3 ? 8/currentK : 6;
+                        if (filteredArray.includes(d.name)){
+                            d3.select(this)
+                                .attr("r", radius);
+                        }
+                        else {
+                            d3.select(this)
+                              .transition().duration(200)
+                              .attr("r", 0);
+                        }
+
+                    })
+                }
+
 
 
                 // filters
