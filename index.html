@@ -114,6 +114,13 @@
                 width: 10px;
             }
 
+            #reset {
+                position: absolute;
+                left: 1375px;
+                top: 20px;
+                font-size: 15px;
+            }
+
 
 
         </style>
@@ -144,6 +151,7 @@
             <h2>Save for Later</h2>
             <p>Review the details of your saved establishments and compare them to aid in your decision.</p>
             <svg id="svgSave" width="1500" height="500px"></svg>
+            <button id="reset">Clear Saved</button>
         </div>
 
         <script>
@@ -601,6 +609,20 @@
                 //             .attr("r", 0);
                 //     }
                 //};
+
+                var resetButton = d3.select("button#reset");
+
+                resetButton.on("click", function() {
+                    console.log("clicked");
+                    var parentG = d3.selectAll("g.savedBox");
+                    xPos = 30;
+                    yPos = 90;
+                    boxXPos = 20
+                    boxYPos = 30
+                    savedBoxID = 0;
+                    parentG.remove();
+
+                });
 
                 d3.selectAll("input[type='checkbox']").on("click", updateCategoryFilter);
                 d3.selectAll("input[type='checkbox']").on("click", updateNeighborhoodFilter);
