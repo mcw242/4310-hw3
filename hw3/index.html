@@ -476,6 +476,7 @@
                     .on("end", brushed)
                 brushGroup.call(brush)
 
+                let filteredArray =[];
                 let brush_not_cleared = true;
 
                 function brushed(event) {
