@@ -420,6 +420,9 @@
 
                 map.call(plotZoom);
 
+                //&& filteredArray.length > 0
+                let filteredArray = [];
+
                 function plotZoomed( { transform } ) {
                     map.attr("transform", transform);
                     circles.each(function(d) {
