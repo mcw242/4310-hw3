@@ -73,9 +73,14 @@
                 border: 2px solid black;
             }
 
+            .categoryFilters {
+                position: absolute;
+                top: 335px;
+            }
+
             .neighborhoodFilters {
                 position: absolute;
-                top: 305px;
+                top: 335px;
                 left: 200px;
             }
 
@@ -87,14 +92,26 @@
 
             #selectAll {
                 position: absolute;
-                top: 850px;
                 left: 10px;
+                margin-bottom: 10px;
             }
 
             #deselectAll {
                 position: absolute;
-                top: 850px;
                 left: 85px;
+                margin-bottom: 5px;
+            }
+
+            #selectAll2 {
+                position: absolute;
+                top: 310px;
+                left: 210px;
+            }
+
+            #deselectAll2 {
+                position: absolute;
+                top: 310px;
+                left: 285px;
             }
 
             #saveForLater {
@@ -110,10 +127,6 @@
                 font-weight: bold;
             }
 
-            .values {
-                width: 10px;
-            }
-
             #reset {
                 position: absolute;
                 left: 1375px;
@@ -126,32 +139,36 @@
         </style>
     </head>
     <body>
-        <div id="top">
-            <h1>Pittsburgh Food & Leisure</h1>
-            <h3>Cameron Kull (cak264) & Marie Williams (mcw242)</h3>
-        </div>
-        <svg id="map" width = 1080 height = 825></svg>
-        <!-- style = background-color:#d6d6d6 -->
-        <div id="panel"></div>
-        <svg id="legend"></div>
+        <div id="entireVisual">
+            <div id="top">
+                <h1>Pittsburgh Food & Leisure</h1>
+                <h3>Cameron Kull (cak264) & Marie Williams (mcw242)</h3>
+            </div>
+            <svg id="map" width = 1080 height = 825></svg>
+            <!-- style = background-color:#d6d6d6 -->
+            <div id="panel"></div>
+            <svg id="legend"></svg>
 
-        <div id="filters">
-            <h2>Tailor Your Search</h2>
-            <p>Hover over an establishment to learn more about it, and click if you want to "save"
-            the restaurant as an option for later! You can also zoom in to get a closer look at the denser areas. </p>
-            <h3>By Rating</h3>
-            <svg id="rating" width = 400 height = 100></svg>
-            <h3>By Category</h3>
-            <h3 id="neighborhoodHeading">By Neighborhood</h3>
-            <button id="selectAll">Select All</button>
-            <button id="deselectAll">Deselect All</button>
-        </div>
+            <div id="filters">
+                <h2>Tailor Your Search</h2>
+                <p>Hover over an establishment to learn more about it, and click if you want to "save"
+                the restaurant as an option for later! You can also zoom in to get a closer look at the denser areas. </p>
+                <h3>By Rating</h3>
+                <svg id="rating" width = 400 height = 100></svg>
+                <h3>By Category</h3>
+                <h3 id="neighborhoodHeading">By Neighborhood</h3>
+                <button id="selectAll">Select All</button>
+                <button id="deselectAll">Deselect All</button>
+                <button id="selectAll2">Select All</button>
+                <button id="deselectAll2">Deselect All</button>
+            </div>
 
-        <div id="saveForLater">
-            <h2>Save for Later</h2>
-            <p>Review the details of your saved establishments and compare them to aid in your decision.</p>
-            <svg id="svgSave" width="1500" height="500px"></svg>
-            <button id="reset">Clear Saved</button>
+            <div id="saveForLater">
+                <h2>Save for Later</h2>
+                <p>Choose up to 3 establishments to save, view in further detail, and compare them to aid in your decision.</p>
+                <svg id="svgSave" width="1500" height="500px"></svg>
+                <button id="reset">Clear Saved</button>
+            </div>
         </div>
 
         <script>
@@ -511,7 +528,7 @@
                 neighborhoods.sort();
 
 
-                let categoryFilters = filters.append("g");
+                let categoryFilters = filters.append("g").attr("class", "categoryFilters");
                 let filterID = 0;
                 categories.forEach(category=>{
                     let filterBlock = categoryFilters.append("g")
@@ -529,7 +546,6 @@
                 });
 
                 let neighborhoodFilters = filters.append("g")
-                                                .attr("transform", `translate(${10}, ${10})`)
                                                 .attr("class", "neighborhoodFilters");
                 neighborhoods.forEach(neighborhood=>{
                     let filterBlock = neighborhoodFilters.append("g")
@@ -650,13 +666,13 @@
                 var resetButton = d3.select("button#reset");
 
                 resetButton.on("click", function() {
-                    console.log("clicked");
                     var parentG = d3.selectAll("g.savedBox");
                     xPos = 30;
                     yPos = 90;
                     boxXPos = 20
                     boxYPos = 30
                     savedBoxID = 0;
+                    boxCount = 0;
                     parentG.remove();
 
                 });
@@ -664,8 +680,10 @@
                 d3.selectAll("input[type='checkbox']").on("click", updateCategoryFilter);
                 d3.selectAll("input[type='checkbox']").on("click", updateNeighborhoodFilter);
 
+                // category select/deselect all
+
                 d3.select("button#selectAll").on("click", function(){
-                    let boxes = d3.selectAll("input[type='checkbox']").property("checked", true);
+                    let boxes = d3.selectAll("input[type='checkbox'].categoryCheckbox").property("checked", true);
                     boxes.each(function() {
                         let boxID = this.id;
                         let label = d3.select("label."+ boxID);
@@ -673,7 +691,26 @@
                     })
                 });
                 d3.select("button#deselectAll").on("click", function(){
-                    let boxes = d3.selectAll("input[type='checkbox']").property("checked", false);
+                    let boxes = d3.selectAll("input[type='checkbox'].categoryCheckbox").property("checked", false);
+                    boxes.each(function() {
+                            let boxID = this.id;
+                            let label = d3.select("label."+ boxID);
+                            handleCheckboxUnchecked(label.text());
+                    })
+                });
+
+                // neighborhood select/deselect all
+
+                d3.select("button#selectAll2").on("click", function(){
+                    let boxes = d3.selectAll("input[type='checkbox'].neighborhoodCheckbox").property("checked", true);
+                    boxes.each(function() {
+                        let boxID = this.id;
+                        let label = d3.select("label."+ boxID);
+                        handleCheckboxChecked(label.text());
+                    })
+                });
+                d3.select("button#deselectAll2").on("click", function(){
+                    let boxes = d3.selectAll("input[type='checkbox'].neighborhoodCheckbox").property("checked", false);
                     boxes.each(function() {
                             let boxID = this.id;
                             let label = d3.select("label."+ boxID);
@@ -688,8 +725,11 @@
                 var boxXPos = 20
                 var boxYPos = 30
                 var savedBoxID = 0;
+                var boxCount = 0;
 
                 function saveForLater(d){
+                    boxCount+=1;
+                    if (boxCount>3){return};
                     var savedBox = d3.select("svg#svgSave").append("g").attr("class", "savedBox");
                     savedBox.append("rect")
                             .attr("x", boxXPos)
