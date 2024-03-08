@@ -470,7 +470,7 @@
                         .attr("stroke", "black");
 
                 let brushGroup = ratingChartArea.append("g").attr("class","brush");
-                let brush = d3.brush()
+                let brush = d3.brushX()
                     .extent([[0,0], [ratingWidth,ratingHeight]])
                     .on("brush", brushed)
                     .on("end", brushed)
@@ -510,7 +510,7 @@
                     } else {
                         brush_not_cleared = true;
                         const [x0, x1] = event.selection;
-                        const ratingRange = [ratingXScale.invert(x0[0]), ratingXScale.invert(x1[0])];
+                        const ratingRange = [ratingXScale.invert(x0), ratingXScale.invert(x1)];
                         filteredList = filteredYelps.filter(d => d.rating >= ratingRange[0] && d.rating <= ratingRange[1]);
 
                         console.log(filteredList);
